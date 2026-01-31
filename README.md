@@ -2,11 +2,11 @@
 
 An advanced algorithmic tool for BNO visa holders to navigate UK Home Office residency requirements.
 
-🚀 Project Overview
+Project Overview
 
     This application is a specialized decision-support system engineered to track, simulate, and predict residency status for BNO visa holders. It automates the calculation of the complex "Rolling 180-day" Indefinite Leave to Remain (ILR) rule and provides a simulation engine for future travel planning.
 
-🛠 Key Technical Features
+Key Technical Features
 
     Rolling Window Algorithm: Implements a sliding window check to ensure no 365-day period in a 5-year span exceeds the 180-day absence limit.
 
@@ -17,7 +17,7 @@ An advanced algorithmic tool for BNO visa holders to navigate UK Home Office res
     Application Date Predictor: Calculates the earliest valid ILR application date by accounting for the "Presence Rule" and the 28-day application window.
 
 
-📜 Version History & Evolution
+Version History & Evolution
 
     This project followed an iterative development lifecycle, evolving from a simple tracker into a comprehensive suite:
 
@@ -38,11 +38,11 @@ v6.0	Hypotheticals	Added "What-If" trip toggles, allowing users to test scenario
 v7.0	Persistence	Current Version: Added "Delta Impact" analytics 
 
 
-🧠 Technical Deep-Dive: The Rolling Window
+Technical Deep-Dive: The Rolling Window
 
     One of the core challenges was the Home Office Rolling 180-Day Rule. Unlike a fixed calendar year, the system must check every possible 365-day window.
 
-Python
+
 
 # Algorithmic approach:
 for trip in sorted_trips:
@@ -52,7 +52,7 @@ for trip in sorted_trips:
     # Calculate overlap of all other trips within this specific window
     current_usage = sum_overlaps(all_trips, window_start, window_end)
     max_rolling_breach = max(max_rolling_breach, current_usage)
-🛠 Tech Stack
+Tech Stack
 
     Language: Python 3.x
     
@@ -61,7 +61,7 @@ for trip in sorted_trips:
     Logic: datetime & timedelta (Temporal Algorithms)
 
 
-📸 Usage
+ Usage
 
     Configure Base Dates: Set your Visa Approval and UK Entry dates.
     
@@ -74,3 +74,6 @@ for trip in sorted_trips:
 🎓 Portfolio Note
 
     Built as a CS major project to demonstrate proficiency in algorithmic thinking, iterative software design, and GUI engineering for solving real-world regulatory compliance problems.
+
+
+To do : encapsulate fucntions , implement view optoins to allow changes to font size/window size
