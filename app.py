@@ -156,6 +156,25 @@ class BNOAdvancedTracker:
             messagebox.showerror("Input Error", "Check date format (DD/MM/YYYY) and ensure Return > Departure")
             return
 
+
+            #---CONFLICT CHECK ---
+        for i, existing_trip in enumerate(self.trips):
+            # Skip checking the trip against itself if we are currently editing it
+            if self.editing_index is not None and i == self.editing_index:
+                continue
+                
+            # Overlap Logic: StartA < EndB AND StartB < EndA
+            # < allows for adjoining trips 
+            if s_dt < existing_trip.return_date and existing_trip.departure < e_dt:
+                trip_type = "What-If" if existing_trip.is_what_if else "Confirmed"
+                messagebox.showerror(
+                    "Date Conflict", 
+                    f"This trip overlaps with an existing {trip_type} trip:\n"
+                    f"{existing_trip.departure.strftime('%d/%m/%Y')} to "
+                    f"{existing_trip.return_date.strftime('%d/%m/%Y')}"
+                )
+                return # Stop the function here
+        
         new_trip = Trip(departure=s_dt, return_date=e_dt, is_what_if=self.what_if_var.get())
         
         if self.editing_index is not None:
