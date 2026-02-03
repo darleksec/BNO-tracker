@@ -1,0 +1,48 @@
+# 1. Timeline Setup
+            # visa_date = datetime.strptime(self.visa_entry.get(), "%d/%m/%Y")
+            # today = datetime.now()
+            # ilr_eligible = visa_date + timedelta(days=5*365.25) - timedelta(days=28)
+            # bc_eligible = ilr_eligible + timedelta(days=365)
+            # self.ilr_date_display.config(text=f"Earliest ILR Application: {ilr_eligible.strftime('%d/%m/%Y')}")
+            # 2. Logic for Real vs All (What-If)
+            # def get_stats(trip_list):
+            #     # Rolling 180 Max
+            #     max_r = 0
+            #     for t in trip_list:
+            #         window_start, window_end = t[0], t[0] + timedelta(days=365)
+            #         usage = sum(max(0, (min(tr[1]-timedelta(days=1), window_end) - max(tr[0]+timedelta(days=1), window_start)).days + 1) 
+            #                     for tr in trip_list if tr[0] < window_end and tr[1] > window_start)
+            #         max_r = max(max_r, usage)
+            #     # BC Totals
+            #     bc_5yr_start = bc_eligible - timedelta(days=5*365)
+            #     bc_final_start = bc_eligible - timedelta(days=365)
+            #     total_bc = sum(tr[2] for tr in trip_list if tr[0] >= bc_5yr_start)
+            #     final_bc = sum(tr[2] for tr in trip_list if tr[0] >= bc_final_start)
+            #     return max_r, total_bc, final_bc
+
+            # real_trips = [t for t in self.trips if not t[3]]
+            # real_max, real_bc_total, real_bc_final = get_stats(real_trips)
+            # all_max, all_bc_total, all_bc_final = get_stats(self.trips)
+
+            # # 3. Delta UI Updates
+            # delta_max = all_max - real_max
+            # delta_bc = all_bc_total - real_bc_total
+
+            # self.ilr_status_lbl.config(text=f"ILR ROLLING MAX: {all_max}/180 Days", foreground="red" if all_max > 180 else "black")
+            # self.ilr_left_lbl.config(text=f"| What-If Impact: +{delta_max} days")
+            
+            # self.bc_status_lbl.config(text=f"BC 5-YEAR TOTAL: {all_bc_total}/450 Days", foreground="red" if all_bc_total > 450 else "black")
+            # self.bc_left_lbl.config(text=f"| What-If Impact: +{delta_bc} days")
+
+            # # 4. Safe Travel Planner (Simulation including What-If commitment)
+            # max_safe = 0
+            # limit_res = "None"
+            # for d in range(1, 451):
+            #     sim_ret = today + timedelta(days=d + 1)
+            #     sim_trips = self.trips + [(today + timedelta(days=1), sim_ret, d, False)]
+            #     s_max, s_bc_t, s_bc_f = get_stats(sim_trips)
+                
+            #     if s_max > 180: limit_res = "ILR 180-Day Rolling Rule"; break
+            #     if s_bc_t > 450: limit_res = "BC 450-Day Total Limit"; break
+            #     if s_bc_f > 90: limit_res = "BC 90-Day Final Year Limit"; break
+            #     max_safe = d
