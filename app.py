@@ -229,25 +229,42 @@ class BNOAdvancedTracker:
 
 
     def add_trip(self):
+        raw_start = self.dep_entry.entry.get().strip()
+        raw_end = self.ret_entry.entry.get().strip()
+
+        def parse_flexible(date_str):
+        # Handles 2026 (%Y) and 26 (%y) just in case
+            for fmt in ("%d/%m/%Y", "%d/%m/%y"):
+                try:
+                    return datetime.strptime(date_str, fmt)
+                except ValueError:
+                    continue
+            return None
+
+
         try:
-            s = self.dep_date.entry.get() 
-            e = self.ret_date.entry.get()
+            
+            start = parse_flexible(raw_start)
+            end = parse_flexible(raw_end)
 
-
-            if end_dt <= start_dt:
+            if end <= start:
                 messagebox.showwarning("Logic Error", "Return date must be after departure.")
                 return
 
             is_wi = self.what_if_var.get()
-            new_trip = Trip(departure=start_dt, return_date=end_dt, is_what_if=is_wi)
+            new_trip = Trip(departure=start, return_date=end, is_what_if=is_wi)
 
             if self.editing_index is not None: 
                 self.trips[self.editing_index] = new_trip
                 self.editing_index = None; self.add_btn.config(text="Add Trip")
             else: 
                 self.trips.append(new_trip)
-            self.refresh_tree(); self.refresh_dashboard()
-        except: messagebox.showerror("Format Error", "Use DD/MM/YYYY, Error: {e}")
+            self.refresh_tree()
+            self.refresh_dashboard()
+
+            self.dep_entry.entry.delete(0, tk.END)
+            self.ret_entry.entry.delete(0, tk.END)
+        except ValueError: messagebox.showerror("Format Error", "Use DD/MM/YYYY, Error: {e}")
 
     def load_hardcoded_data(self):
         raw = [("07/08/2024", "07/09/2024"), ("28/03/2025", "03/04/2025"), ("08/04/2025", "16/04/2025"), 
@@ -283,7 +300,14 @@ class BNOAdvancedTracker:
         # for t in sorted(self.trips, key=lambda x: x[0]):
             tag = 'hypothetical' if t.is_what_if else ''
             t_type = "WHAT-IF" if t.is_what_if else "CONFIRMED"
-            self.tree.insert("", "end", values=(t.departure.strftime("%d/%m/%Y"), t.return_date.strftime("%d/%m/%Y"), t.daysAbsent, t_type), tags=(tag,))
+            self.tree.insert("", "end",
+                values=(
+                    t.departure.strftime("%d/%m/%Y"), 
+                    t.return_date.strftime("%d/%m/%Y"),
+                    t.daysAbsent,
+                    t_type
+                ),
+                tags=(tag,))
 
     def delete_trip(self):
         sel = self.tree.selection()
@@ -291,7 +315,7 @@ class BNOAdvancedTracker:
             # Find trip in master list by matching values
             item = self.tree.item(sel[0])['values']
             for i, t in enumerate(self.trips):
-                if t[0].strftime("%d/%m/%Y") == item[0]:
+                if t.departure.strftime("%d/%m/%Y") == item[0]:
                     self.trips.pop(i); break
             self.refresh_tree(); self.refresh_dashboard()
 
@@ -300,11 +324,11 @@ class BNOAdvancedTracker:
         if not sel: return
         item = self.tree.item(sel[0])['values']
         for i, t in enumerate(self.trips):
-            if t[0].strftime("%d/%m/%Y") == item[0]:
+            if t.departure.strftime("%d/%m/%Y") == item[0]:
                 self.editing_index = i
-                self.dep_entry.delete(0, tk.END); self.dep_entry.insert(0, item[0])
-                self.ret_entry.delete(0, tk.END); self.ret_entry.insert(0, item[1])
-                self.what_if_var.set(True if item[3] == "WHAT-IF" else False)
+                self.dep_entry.entry.delete(0, tk.END); self.dep_entry.entry.insert(0, item[0])
+                self.ret_entry.entry.delete(0, tk.END); self.ret_entry.entry.insert(0, item[1])
+                self.what_if_var.set(t.is_what_if)
                 self.add_btn.config(text="Save Edit")
                 break
 
