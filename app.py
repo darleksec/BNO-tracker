@@ -3,6 +3,7 @@ from tkinter import messagebox
 from datetime import datetime, timedelta
 import ttkbootstrap as tb 
 from ttkbootstrap.constants import *
+from ttkbootstrap.widgets import DateEntry
 from logic import Trip, LogicEngine
 
     #ttkbootstrap theme 
@@ -30,13 +31,15 @@ class BNOAdvancedTracker:
         config_frame.pack(pady=10, padx=20, fill="x")
 
         tb.Label(config_frame, text="Visa Approved:").grid(row=0, column=0, padx=5, pady=5)
-        self.visa_entry = tb.Entry(config_frame, width=15)
-        self.visa_entry.insert(0, "07/08/2024")
+        self.visa_entry = DateEntry(config_frame, width=15)
+        self.visa_entry.entry.delete(0, 'end')
+        self.visa_entry.entry.insert(0, "07/08/2024")
         self.visa_entry.grid(row=0, column=1)
 
         tb.Label(config_frame, text="UK Entry Date:").grid(row=0, column=2, padx=5, pady=5)
-        self.entry_date_field = tb.Entry(config_frame, width=15)
-        self.entry_date_field.insert(0, "07/09/2024")
+        self.entry_date_field = DateEntry(config_frame, width=15)
+        self.entry_date_field.entry.delete(0, 'end')  
+        self.entry_date_field.entry.insert(0, "07/09/2024")
         self.entry_date_field.grid(row=0, column=3)
 
         tb.Button(config_frame, text="Update Base Dates", command=self.refresh_dashboard).grid(row=0, column=4, padx=10)
@@ -50,9 +53,26 @@ class BNOAdvancedTracker:
         trip_frame.pack(pady=10, padx=20, fill="x")
         
         tb.Label(trip_frame, text="Depart:").grid(row=0, column=0, padx=5)
-        self.dep_entry = tb.Entry(trip_frame, width=12); self.dep_entry.grid(row=0, column=1)
+        self.dep_entry = tb.DateEntry(
+            trip_frame, 
+            width=12, 
+            dateformat="%d/%m/%Y",  # Strictly force 4-digit year
+            firstweekday=0          # Starts week on Monday
+        )
+        self.dep_entry.grid(row=0, column=1)
+
+        # Return Date Picker
         tb.Label(trip_frame, text="Return:").grid(row=0, column=2, padx=5)
-        self.ret_entry = tb.Entry(trip_frame, width=12); self.ret_entry.grid(row=0, column=3)
+        self.ret_entry = tb.DateEntry(
+            trip_frame, 
+            width=12, 
+            dateformat="%d/%m/%Y", 
+            firstweekday=0
+        )
+        self.ret_entry.grid(row=0, column=3)
+
+        self.dep_entry.entry.configure(validate=None)
+        self.ret_entry.entry.configure(validate=None)
         
         self.what_if_var = tk.BooleanVar(value=False)
         self.what_if_check = tb.Checkbutton(trip_frame, text="What-If Trip?", variable=self.what_if_var)
@@ -128,7 +148,7 @@ class BNOAdvancedTracker:
     def refresh_dashboard(self):
         try:
                 #fetch date from logic
-            ilr_date , bc_date = self.engine.getMilestoneDates(self.visa_entry.get())
+            ilr_date , bc_date = self.engine.getMilestoneDates(self.visa_entry.entry.get())
             if not ilr_date: return 
             self.ilr_date_display.config(text=f"Earliest ILR: {ilr_date.strftime('%d/%m/%Y')}")
 
@@ -210,11 +230,16 @@ class BNOAdvancedTracker:
 
     def add_trip(self):
         try:
-            s, e = datetime.strptime(self.dep_entry.get(), "%d/%m/%Y"), datetime.strptime(self.ret_entry.get(), "%d/%m/%Y")
-            d = max(0, (e - s).days - 1)
-            is_wi = self.what_if_var.get()
+            s = self.dep_date.entry.get() 
+            e = self.ret_date.entry.get()
 
-            new_trip = Trip(departure=s, return_date=e, is_what_if= is_wi)
+
+            if end_dt <= start_dt:
+                messagebox.showwarning("Logic Error", "Return date must be after departure.")
+                return
+
+            is_wi = self.what_if_var.get()
+            new_trip = Trip(departure=start_dt, return_date=end_dt, is_what_if=is_wi)
 
             if self.editing_index is not None: 
                 self.trips[self.editing_index] = new_trip
