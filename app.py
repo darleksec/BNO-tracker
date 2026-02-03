@@ -1,82 +1,54 @@
 import tkinter as tk
 from tkinter import messagebox
-from datetime import datetime, timedelta
+from datetime import datetime
 import ttkbootstrap as tb 
-from ttkbootstrap.constants import *
 from ttkbootstrap.widgets import DateEntry
 from logic import Trip, LogicEngine
 
-    #ttkbootstrap theme 
 class BNOAdvancedTracker:
     def __init__(self, root):
         self.root = root
         self.engine = LogicEngine()
         self.trips = []
-        self.style = tb.Style(theme="superhero")
         self.root.title("BNO Settlement & Citizenship Suite (2026) v9")
-        self.root.geometry("1000x900")
+        self.root.geometry("1000x950")
         self.editing_index = None
-        # --- Initial State ---
-        # Format: (Departure, Return, Days, is_what_if)
-        
-        
 
         self.setup_ui()
         self.load_hardcoded_data()
         self.refresh_dashboard()
 
     def setup_ui(self):
-        # 1. Base Configuration (Visa & Entry Dates)
-        config_frame = tb.LabelFrame(self.root, text="Step 1: Base Residency Configuration")
+        # --- 1. CONFIGURATION FRAME ---
+        config_frame = tb.Labelframe(self.root, text="Step 1: Base Residency Configuration", padding=10)
         config_frame.pack(pady=10, padx=20, fill="x")
 
-        tb.Label(config_frame, text="Visa Approved:").grid(row=0, column=0, padx=5, pady=5)
-        self.visa_entry = DateEntry(config_frame, width=15)
-        self.visa_entry.entry.delete(0, 'end')
-        self.visa_entry.entry.insert(0, "07/08/2024")
+        tb.Label(config_frame, text="Visa Approved:").grid(row=0, column=0, padx=5)
+        self.visa_entry = DateEntry(config_frame, width=15, dateformat="%d/%m/%Y")
+        self.visa_entry.entry.delete(0, 'end'); self.visa_entry.entry.insert(0, "07/08/2024")
         self.visa_entry.grid(row=0, column=1)
 
-        tb.Label(config_frame, text="UK Entry Date:").grid(row=0, column=2, padx=5, pady=5)
-        self.entry_date_field = DateEntry(config_frame, width=15)
-        self.entry_date_field.entry.delete(0, 'end')  
-        self.entry_date_field.entry.insert(0, "07/09/2024")
+        tb.Label(config_frame, text="UK Entry Date:").grid(row=0, column=2, padx=5)
+        self.entry_date_field = DateEntry(config_frame, width=15, dateformat="%d/%m/%Y")
+        self.entry_date_field.entry.delete(0, 'end'); self.entry_date_field.entry.insert(0, "07/09/2024")
         self.entry_date_field.grid(row=0, column=3)
 
-        tb.Button(config_frame, text="Update Base Dates", command=self.refresh_dashboard).grid(row=0, column=4, padx=10)
+        tb.Button(config_frame, text="Update Milestones", command=self.refresh_dashboard, bootstyle="outline-primary").grid(row=0, column=4, padx=10)
         
-        self.ilr_date_display = tb.Label(config_frame, text="Earliest ILR Application: --", 
-                                          font=("Arial", 16, "bold"), foreground="red")
-        self.ilr_date_display.grid(row=1, column=0, columnspan=5, pady=5, sticky="w", padx=5)
+        self.ilr_date_display = tb.Label(config_frame, text="Earliest ILR: --", font=("Arial", 14, "bold"))
+        self.ilr_date_display.grid(row=1, column=0, columnspan=5, pady=10, sticky="w")
 
-        # 2. Trip Management
-        trip_frame = tb.LabelFrame(self.root, text="Step 2: Absence Log & What-If Planner")
+        # --- 2. LOGGING FRAME ---
+        trip_frame = tb.Labelframe(self.root, text="Step 2: Absence Log & What-If Planner", padding=10)
         trip_frame.pack(pady=10, padx=20, fill="x")
         
-        tb.Label(trip_frame, text="Depart:").grid(row=0, column=0, padx=5)
-        self.dep_entry = tb.DateEntry(
-            trip_frame, 
-            width=12, 
-            dateformat="%d/%m/%Y",  # Strictly force 4-digit year
-            firstweekday=0          # Starts week on Monday
-        )
-        self.dep_entry.grid(row=0, column=1)
+        self.dep_entry = DateEntry(trip_frame, width=12, dateformat="%d/%m/%Y")
+        self.dep_entry.grid(row=0, column=1, padx=5)
+        self.ret_entry = DateEntry(trip_frame, width=12, dateformat="%d/%m/%Y")
+        self.ret_entry.grid(row=0, column=3, padx=5)
 
-        # Return Date Picker
-        tb.Label(trip_frame, text="Return:").grid(row=0, column=2, padx=5)
-        self.ret_entry = tb.DateEntry(
-            trip_frame, 
-            width=12, 
-            dateformat="%d/%m/%Y", 
-            firstweekday=0
-        )
-        self.ret_entry.grid(row=0, column=3)
-
-        self.dep_entry.entry.configure(validate=None)
-        self.ret_entry.entry.configure(validate=None)
-        
         self.what_if_var = tk.BooleanVar(value=False)
-        self.what_if_check = tb.Checkbutton(trip_frame, text="What-If Trip?", variable=self.what_if_var)
-        self.what_if_check.grid(row=0, column=4, padx=10)
+        tb.Checkbutton(trip_frame, text="What-If?", variable=self.what_if_var).grid(row=0, column=4, padx=5)
 
         self.add_btn = tb.Button(trip_frame, text="Add Trip", command=self.add_trip, bootstyle="success")
         self.add_btn.grid(row=0, column=5, padx=5)
@@ -84,239 +56,143 @@ class BNOAdvancedTracker:
         tb.Button(trip_frame, text="Delete", command=self.delete_trip, bootstyle="danger-outline").grid(row=0, column=7, padx=2)
 
         self.tree = tb.Treeview(self.root, columns=("S", "E", "D", "T"), show='headings', height=6)
-        self.tree.heading("S", text="Departure"); self.tree.heading("E", text="Return")
-        self.tree.heading("D", text="Days Absent"); self.tree.heading("T", text="Type")
-        self.tree.column("T", width=100)
-        self.tree.pack(pady=5, padx=30, fill="x")
-        self.tree.tag_configure('hypothetical', foreground='gray', font=('Arial', 16, 'bold'))
+        for col, head in zip(("S", "E", "D", "T"), ("Departure", "Return", "Days", "Type")):
+            self.tree.heading(col, text=head)
+        self.tree.pack(pady=5, padx=20, fill="x")
+        self.tree.tag_configure('hypothetical', foreground='orange')
 
-        style = tb.Style()
-        style.configure("Treeview", rowheight=30)
-        self.tree.configure(style="Treeview")
+        # --- 3. DASHBOARD FRAME ---
+        dash = tb.Labelframe(self.root, text="Step 3: Residency Health Dashboard", padding=15)
+        dash.pack(pady=10, padx=20, fill="x")
 
-       # 3. Separated Stats Dashboard
-        dash = tb.LabelFrame(self.root, text="Step 3: Residency Health Dashboard")
-        dash.pack(pady=20, padx=50, fill="x") # Reduced pady from 80 to 20 to avoid cutting off the UI
+        self.ilr_status_lbl = tb.Label(dash, text="ILR MAX: --", font=("Helvetica", 20, "bold"))
+        self.ilr_status_lbl.pack(anchor="w")
+        self.ilr_left_lbl = tb.Label(dash, text="Impact: --")
+        self.ilr_left_lbl.pack(anchor="w", padx=10)
 
-        # ILR Section
-        self.ilr_frame = tb.Frame(dash)
-        self.ilr_frame.pack(fill="x", padx=10, pady=10)
+        self.bc_status_lbl = tb.Label(dash, text="BC TOTAL: --", font=("Helvetica", 20, "bold"))
+        self.bc_status_lbl.pack(anchor="w", pady=(10,0))
+        self.bc_left_lbl = tb.Label(dash, text="Impact: --")
+        self.bc_left_lbl.pack(anchor="w", padx=10)
 
-        self.ilr_status_lbl = tb.Label(
-            self.ilr_frame,
-            text="ILR Rolling Max: --",
-            font=("Helvetica", 24, "bold"),
-            bootstyle="inverse-success"
-        )
-        self.ilr_status_lbl.pack(side="left")
+        # --- 4. PLANNER & TROUBLESHOOT ---
+        planner = tb.Labelframe(self.root, text="Safe Travel Planner", padding=20)
+        planner.pack(pady=10, padx=20, fill="x")
+        self.planner_summary = tb.Label(planner, text="Calculating...", font=("Arial", 28, "bold"))
+        self.planner_summary.pack()
+        self.allowance_details = tb.Label(planner, text="",font=("Arial", 22, "bold"))
+        self.allowance_details.pack()
 
-        self.ilr_left_lbl = tb.Label(self.ilr_frame, text="| Delta Impact: --", font=("Helvetica", 12), foreground="white")
-        self.ilr_left_lbl.pack(side="left", padx=16)
-
-        # BC Section
-        self.bc_frame = tb.Frame(dash)
-        self.bc_frame.pack(fill="x", padx=10, pady=10)
-
-        self.bc_status_lbl = tb.Label(
-            self.bc_frame, 
-            text="BC 5-YEAR TOTAL: --",
-            font=("Helvetica", 24, "bold"),
-            bootstyle="inverse-success" 
-        )
-        self.bc_status_lbl.pack(side="left")
-
-        self.bc_left_lbl = tb.Label(self.bc_frame, text="| Delta Impact: --", font=("Helvetica", 12), foreground="white")
-        self.bc_left_lbl.pack(side="left", padx=10)
-
-        # Safe Travel Planner
-        self.planner_frame = tb.Labelframe(self.root, text=" Safe Travel Planner (Impact of Current Plans)", bootstyle="primary")
-        self.planner_frame.pack(pady=10, padx=20, fill="x")
-        self.planner_summary = tb.Label(self.planner_frame, text="Calculating...", font=("Arial", 11, "bold"), foreground="red")
-        self.planner_summary.pack(pady=5)
-        self.allowance_details = tb.Label(self.planner_frame, text="", font=("Arial", 9))
-        self.allowance_details.pack(pady=2)
-
-        # 4. Troubleshooting & Solutions
-        self.solve_frame = tb.LabelFrame(self.root, text="Troubleshooting & Rule Solutions")
-        self.solve_frame.pack(pady=10, padx=20, fill="both", expand=True)
-        self.solve_text = tk.Text(self.solve_frame, height=10, state="disabled", background="#f9f9f9", font=("Consolas", 10))
-        self.solve_text.pack(padx=10, pady=10, fill="both", expand=True)
-
-    
-        pass
+        solve = tb.Labelframe(self.root, text="Troubleshooting & Solutions", padding=10)
+        solve.pack(pady=10, padx=20, fill="both", expand=True)
+        # Use a Label for solve_text to handle the bootstyle colors easily
+        self.solve_text = tb.Label(solve, text="", wraplength=800, justify="left", font=("Consolas", 24))
+        self.solve_text.pack(fill="both")
 
     def refresh_dashboard(self):
+        """Controller: Orchestrates data flow between Logic and UI."""
         try:
-                #fetch date from logic
-            ilr_date , bc_date = self.engine.getMilestoneDates(self.visa_entry.entry.get())
+            # 1. Logic Processing
+            visa_str = self.visa_entry.entry.get()
+            ilr_date, bc_date = self.engine.getMilestoneDates(visa_str)
             if not ilr_date: return 
-            self.ilr_date_display.config(text=f"Earliest ILR: {ilr_date.strftime('%d/%m/%Y')}")
-
-            # limit_reason = self.engine.run_sim(limit_reason.get())
 
             real_trips = [t for t in self.trips if not t.is_what_if]
             real_max, real_bc, _ = self.engine.getStats(real_trips, bc_date)
-            all_max, all_bc , _ = self.engine.getStats(self.trips, bc_date)
+            all_max, all_bc, _ = self.engine.getStats(self.trips, bc_date)
             max_safe, limit = self.engine.run_sim(self.trips, bc_date)
+            advice = self.engine.get_troubleshooting_advice(all_max, all_bc, bc_date, self.trips)
 
-            self.apply_UI_Styles(all_max, all_bc, max_safe, limit)
-
-           
-
-            self.planner_summary.config(text=f"Additional Safe Trip Tomorrow: {max_safe} Days", bootstyle="info")
-            self.allowance_details.config(text=f"Constraint based on current plans: {limit}")
-
-
-             # 3. Delta UI Updates
-            delta_max = all_max - real_max
-            delta_bc = all_bc - real_bc
-
-            self.ilr_status_lbl.config(text=f"ILR ROLLING MAX: {all_max}/180 Days", foreground="red" if all_max > 180 else "black")
-            self.ilr_left_lbl.config(text=f"| What-If Impact: +{delta_max} days")
+            # 2. UI Updates
+            self.ilr_date_display.config(text=f"Earliest ILR Application: {ilr_date.strftime('%d/%m/%Y')}")
+            self.ilr_left_lbl.config(text=f"What-If Impact: +{all_max - real_max} days")
+            self.bc_left_lbl.config(text=f"What-If Impact: +{all_bc - real_bc} days")
             
-            self.bc_status_lbl.config(text=f"BC 5-YEAR TOTAL: {all_bc}/450 Days", foreground="red" if all_bc > 450 else "black")
-            self.bc_left_lbl.config(text=f"| What-If Impact: +{delta_bc} days")
-
-
-                # # 5. Troubleshooting Logic
-                # solutions = []
-                # if all_max > 180:
-                #     self.ilr_status_lbl.configure(bootstyle="danger")
-                #     solutions.append(f"ILR BREACH: Rolling window exceeds 180 days.\n   SOLUTION: If this is a What-If trip, reduce its duration. If confirmed, your 5-year ILR clock may reset.")
-                
-                # if all_bc_total > 450:
-                #     self.bc_status_lbl.configure(bootstyle="danger")
-                #     solutions.append(f"BC TOTAL BREACH: {all_bc_total}/450 days.\n   SOLUTION: Postpone Citizenship application until oldest trips fall out of the 5-year window.")
-                # else:
-                #     self.bc_status_lbl.configure(bootstyle="success")
-
-                # # BC Presence Rule Fail
-                # presence_date = bc_eligible - timedelta(days=5*365)
-                # conflict = next((t for t in self.trips if t[0] <= presence_date <= t[1]), None)
-                # if conflict:
-                #     safe_app = (conflict[1] + timedelta(days=1)) + timedelta(days=5*365)
-                #     solutions.append(f"BC PRESENCE RULE FAIL: Away on {presence_date.strftime('%d/%m/%Y')}.\n   FIX: Apply on/after {safe_app.strftime('%d/%m/%Y')} to ensure you were in the UK 5 years prior.")
-
-                # self.solve_text.config(state="normal"); self.solve_text.delete("1.0", tk.END)
-                # self.solve_text.insert("1.0", "\n\n".join(solutions) if solutions else "✅ CURRENT PLANS ARE WITHIN LIMITS.\nAll residency and presence requirements are met.")
-                # self.solve_text.config(state="disabled")
-
-            
-
-            
+            self.apply_UI_Styles(all_max, all_bc, max_safe, limit, advice)
         except Exception as e:
-            print(f"Dashboard update Error: {e}")
+            print(f"Dashboard Error: {e}")
 
-
-    def apply_UI_Styles(self, all_max, all_bc, max_safe, limit):
+    def apply_UI_Styles(self, all_max, all_bc, max_safe, limit, solutions):
+        """View: Handles the visual representation of data (Traffic Lights)."""
         # ILR Styling
         self.ilr_status_lbl.config(
-            text=f"ILR Rolling Max: {all_max}/180", 
+            text=f"ILR ROLLING MAX: {all_max}/180 Days", 
             bootstyle="inverse-danger" if all_max > 180 else "inverse-success"
         )
         
         # BC Styling
         self.bc_status_lbl.config(
-            text=f"BC 5-Year Total: {all_bc}/450", 
+            text=f"BC 5-YEAR TOTAL: {all_bc}/450 Days", 
             bootstyle="inverse-danger" if all_bc > 450 else "inverse-success"
         )
 
         # Planner Styling
         self.planner_summary.config(
             text=f"Additional Safe Trip Tomorrow: {max_safe} Days",
-            bootstyle="success" if max_safe > 30 else "warning"
+            bootstyle="success" if max_safe > 14 else "warning"
         )
+        self.allowance_details.config(text=f"Constraint: {limit}")
 
+        # Troubleshooting Styling
+        display_solutions = solutions if solutions else "CURRENT PLANS ARE WITHIN RESIDENCY LIMITS."
+        style = "success"
+        if "BREACH" in display_solutions or "FAIL" in display_solutions: style = "danger"
+        elif "⚠️" in display_solutions: style = "warning"
+        
+        self.solve_text.config(text=display_solutions, bootstyle=style)
 
     def add_trip(self):
-        raw_start = self.dep_entry.entry.get().strip()
-        raw_end = self.ret_entry.entry.get().strip()
-
-        def parse_flexible(date_str):
-        # Handles 2026 (%Y) and 26 (%y) just in case
+        """Input Handler: Sanitizes date strings and creates Trip objects."""
+        raw_s, raw_e = self.dep_entry.entry.get().strip(), self.ret_entry.entry.get().strip()
+        
+        def parse(d):
             for fmt in ("%d/%m/%Y", "%d/%m/%y"):
-                try:
-                    return datetime.strptime(date_str, fmt)
-                except ValueError:
-                    continue
+                try: return datetime.strptime(d, fmt)
+                except: continue
             return None
 
+        s_dt, e_dt = parse(raw_s), parse(raw_e)
+        if not s_dt or not e_dt or e_dt <= s_dt:
+            messagebox.showerror("Input Error", "Check date format (DD/MM/YYYY) and ensure Return > Departure")
+            return
 
-        try:
-            
-            start = parse_flexible(raw_start)
-            end = parse_flexible(raw_end)
+        new_trip = Trip(departure=s_dt, return_date=e_dt, is_what_if=self.what_if_var.get())
+        
+        if self.editing_index is not None:
+            self.trips[self.editing_index] = new_trip
+            self.editing_index = None
+            self.add_btn.config(text="Add Trip")
+        else:
+            self.trips.append(new_trip)
 
-            if end <= start:
-                messagebox.showwarning("Logic Error", "Return date must be after departure.")
-                return
-
-            is_wi = self.what_if_var.get()
-            new_trip = Trip(departure=start, return_date=end, is_what_if=is_wi)
-
-            if self.editing_index is not None: 
-                self.trips[self.editing_index] = new_trip
-                self.editing_index = None; self.add_btn.config(text="Add Trip")
-            else: 
-                self.trips.append(new_trip)
-            self.refresh_tree()
-            self.refresh_dashboard()
-
-            self.dep_entry.entry.delete(0, tk.END)
-            self.ret_entry.entry.delete(0, tk.END)
-        except ValueError: messagebox.showerror("Format Error", "Use DD/MM/YYYY, Error: {e}")
+        self.refresh_tree(); self.refresh_dashboard()
+        self.dep_entry.entry.delete(0, 'end'); self.ret_entry.entry.delete(0, 'end')
 
     def load_hardcoded_data(self):
+        """Initializes with user data."""
         raw = [("07/08/2024", "07/09/2024"), ("28/03/2025", "03/04/2025"), ("08/04/2025", "16/04/2025"), 
-               ("15/06/2025", "18/08/2025"), ("04/12/2025", "07/12/2025"), ("11/12/2025", "27/01/2026")]
+                ("15/06/2025", "18/08/2025"), ("04/12/2025", "07/12/2025"), ("11/12/2025", "27/01/2026")]
 
-        # raw = [
-        #     # 1. The "Presence Rule" Trap (Critical for BC)
-        #     # Assuming you apply for BC on 10/08/2030, you MUST be in the UK on 10/08/2025.
-        #     # This trip covers that date to trigger the "Presence Rule Fail" logic.
-        #     ("05/08/2025", "15/08/2025"), 
-
-        #     # 2. The "Rolling 180" Stressor (ILR Rule)
-        #     # A very long trip that puts you near the limit.
-        #     ("01/01/2026", "20/06/2026"), # 170 Days
-
-        #     # 3. The "Final Year" Breach (BC Rule)
-        #     # This trip happens in 2029/2030 (the final year before BC).
-        #     # We'll make it 95 days to trigger the "90-day final year" breach.
-        #     ("01/01/2030", "07/04/2030"), 
-
-        #     # 4. Standard small trips to pad the 5-year total (BC 450-day rule)
-        # ("10/11/2027", "20/11/2027"),
-        # ("05/05/2028", "15/05/2028")
-        # ]
         for dep, ret in raw:
             s, e = datetime.strptime(dep, "%d/%m/%Y"), datetime.strptime(ret, "%d/%m/%Y")
-            self.trips.append(Trip(departure=s,return_date=e,is_what_if= False))
+            self.trips.append(Trip(departure=s, return_date=e))
         self.refresh_tree()
 
     def refresh_tree(self):
         for i in self.tree.get_children(): self.tree.delete(i)
         for t in sorted(self.trips, key=lambda x: x.departure):
-        # for t in sorted(self.trips, key=lambda x: x[0]):
-            tag = 'hypothetical' if t.is_what_if else ''
-            t_type = "WHAT-IF" if t.is_what_if else "CONFIRMED"
-            self.tree.insert("", "end",
-                values=(
-                    t.departure.strftime("%d/%m/%Y"), 
-                    t.return_date.strftime("%d/%m/%Y"),
-                    t.daysAbsent,
-                    t_type
-                ),
-                tags=(tag,))
+            self.tree.insert("", "end", values=(
+                t.departure.strftime("%d/%m/%Y"), 
+                t.return_date.strftime("%d/%m/%Y"),
+                t.daysAbsent,
+                "WHAT-IF" if t.is_what_if else "CONFIRMED"
+            ), tags=('hypothetical',) if t.is_what_if else ())
 
     def delete_trip(self):
         sel = self.tree.selection()
         if sel:
-            # Find trip in master list by matching values
             item = self.tree.item(sel[0])['values']
-            for i, t in enumerate(self.trips):
-                if t.departure.strftime("%d/%m/%Y") == item[0]:
-                    self.trips.pop(i); break
+            self.trips = [t for t in self.trips if t.departure.strftime("%d/%m/%Y") != item[0]]
             self.refresh_tree(); self.refresh_dashboard()
 
     def load_edit(self):
@@ -326,14 +202,13 @@ class BNOAdvancedTracker:
         for i, t in enumerate(self.trips):
             if t.departure.strftime("%d/%m/%Y") == item[0]:
                 self.editing_index = i
-                self.dep_entry.entry.delete(0, tk.END); self.dep_entry.entry.insert(0, item[0])
-                self.ret_entry.entry.delete(0, tk.END); self.ret_entry.entry.insert(0, item[1])
+                self.dep_entry.entry.delete(0, 'end'); self.dep_entry.entry.insert(0, item[0])
+                self.ret_entry.entry.delete(0, 'end'); self.ret_entry.entry.insert(0, item[1])
                 self.what_if_var.set(t.is_what_if)
                 self.add_btn.config(text="Save Edit")
                 break
 
 if __name__ == "__main__":
-    import ttkbootstrap as tb
     root = tb.Window(themename="superhero")
     app = BNOAdvancedTracker(root)
     root.mainloop()
