@@ -1,3 +1,10 @@
+"""
+Project: BNO Settlement & Citizenship Tracker
+Author: Kimi Tang
+Date: February 2026
+License: MIT
+Description: A tool to automate UK residency and absence compliance checks.
+"""
 from datetime import datetime, timedelta
 from dataclasses import dataclass
 

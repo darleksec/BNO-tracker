@@ -1,24 +1,43 @@
+"""
+Project: BNO Settlement & Citizenship Tracker
+Author: Kimi Tang
+Date: February 2026
+License: MIT
+Description: A tool to automate UK residency and absence compliance checks.
+"""
+
 import tkinter as tk
 from tkinter import messagebox
 from datetime import datetime
 import ttkbootstrap as tb 
 from ttkbootstrap.widgets import DateEntry
 from logic import Trip, LogicEngine
+import json
 
 class BNOAdvancedTracker:
     def __init__(self, root):
         self.root = root
         self.engine = LogicEngine()
         self.trips = []
-        self.root.title("BNO Settlement & Citizenship Suite (2026) v9")
-        self.root.geometry("1000x950")
+        self.style = tb.Style()
+        self.root.title("BNO Settlement & Citizenship Suite (2026) ")
+        self.root.geometry("1000x1200")
         self.editing_index = None
 
         self.setup_ui()
-        self.load_hardcoded_data()
+    #   self.load_hardcoded_data()
         self.refresh_dashboard()
+        self.load_data()
 
     def setup_ui(self):
+        self.menu_bar = tk.Menu(self.root)
+        self.root.config(menu=self.menu_bar)
+
+        # Add "Help" menu
+        self.help_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label="Help", menu=self.help_menu)
+        self.help_menu.add_command(label="About", command=self.show_about)
+        
         # --- 1. CONFIGURATION FRAME ---
         config_frame = tb.Labelframe(self.root, text="Step 1: Base Residency Configuration", padding=10)
         config_frame.pack(pady=10, padx=20, fill="x")
@@ -55,11 +74,21 @@ class BNOAdvancedTracker:
         tb.Button(trip_frame, text="Edit", command=self.load_edit, bootstyle="info-outline").grid(row=0, column=6, padx=2)
         tb.Button(trip_frame, text="Delete", command=self.delete_trip, bootstyle="danger-outline").grid(row=0, column=7, padx=2)
 
-        self.tree = tb.Treeview(self.root, columns=("S", "E", "D", "T"), show='headings', height=6)
+        self.tree = tb.Treeview(self.root, columns=("S", "E", "D", "T"), show='headings', height=10)
         for col, head in zip(("S", "E", "D", "T"), ("Departure", "Return", "Days", "Type")):
-            self.tree.heading(col, text=head)
-        self.tree.pack(pady=5, padx=20, fill="x")
+            self.tree.heading(col, text=head, anchor = "center")
+            self.tree.column(col, anchor="center", width=120)
+        self.tree.pack(pady=0, padx=20, fill="x")
         self.tree.tag_configure('hypothetical', foreground='orange')
+        self.style.configure(
+            "Treeview",
+            borderwidth=5,
+            relief="solid",
+            font=("Segoe UI", 11),       # Set the row font
+            rowheight=35,                
+            fieldbackground="#2b3e50"
+        )
+
 
         # --- 3. DASHBOARD FRAME ---
         dash = tb.Labelframe(self.root, text="Step 3: Residency Health Dashboard", padding=15)
@@ -85,9 +114,17 @@ class BNOAdvancedTracker:
 
         solve = tb.Labelframe(self.root, text="Troubleshooting & Solutions", padding=10)
         solve.pack(pady=10, padx=20, fill="both", expand=True)
-        # Use a Label for solve_text to handle the bootstyle colors easily
         self.solve_text = tb.Label(solve, text="", wraplength=800, justify="left", font=("Consolas", 24))
         self.solve_text.pack(fill="both")
+
+        #save/load btn
+        btn_frame = tb.Frame(config_frame)
+        btn_frame.grid(row=0, column=7, padx=20)
+
+        tb.Button(btn_frame, text="💾 Save", command=self.save_data, 
+                bootstyle="info", width=8).pack(side="left", padx=2)
+        tb.Button(btn_frame, text="📂 Load", command=self.load_data, 
+                bootstyle="info-outline", width=8).pack(side="left", padx=2)
 
     def refresh_dashboard(self):
         """Controller: Orchestrates data flow between Logic and UI."""
@@ -227,6 +264,63 @@ class BNOAdvancedTracker:
                 self.add_btn.config(text="Save Edit")
                 break
 
+    def save_data(self, filename="trips_data.json"):
+        #Serialise
+
+        try:
+            #Trip obj to dict (datetime -> str)
+            data_to_save = []
+            for t in self.trips:
+                data_to_save.append({
+                    "departure": t.departure.isoformat(),
+                    "return_date": t.return_date.isoformat(),
+                    "is_what_if": t.is_what_if
+                })
+
+            with open(filename, "w") as f:
+                json.dump(data_to_save,f , indent=4)
+
+                messagebox.showinfo("Save success:" , f"Data saved to {filename}")
+
+        except Exception as e:
+            messagebox.showerror("Save Error:", f"Could not save to {filename}")
+
+    def load_data(self, filename="trips_data.json"):
+        try:
+            with open(filename, "r") as f:
+
+                raw_data = json.load(f)
+
+            self.trips = [] # clear current list
+            for item in raw_data:
+                new_trip = Trip(
+                    departure=datetime.fromisoformat(item["departure"]),
+                    return_date=datetime.fromisoformat(item["return_date"]),
+                    is_what_if=item["is_what_if"]
+                )
+
+                self.trips.append(new_trip)
+
+            self.refresh_tree()
+            self.refresh_dashboard()
+
+            messagebox.showinfo("Loaded", "History synced")
+        except FileNotFoundError:
+            pass
+        except Exception as e:
+            messagebox.showerror("Load Error", f"Could not read file: {e}")
+
+    def show_about(self):
+        messagebox.showinfo(
+            "About BNO Tracker", 
+            "BNO Settlement Suite v2.0\n\n"
+            "Developed by: Kimi Tang\n"
+            "Built with Python & ttkbootstrap\n\n"
+            "Licensed under MIT. (c) 2026"
+        ) 
+            
+
+        
 if __name__ == "__main__":
     root = tb.Window(themename="superhero")
     app = BNOAdvancedTracker(root)

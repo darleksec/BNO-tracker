@@ -1,3 +1,6 @@
+Note : implement view optoins to allow changes to font size/window size
+
+
 # 1. Timeline Setup
             # visa_date = datetime.strptime(self.visa_entry.get(), "%d/%m/%Y")
             # today = datetime.now()
