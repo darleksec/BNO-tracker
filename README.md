@@ -15,27 +15,7 @@ Key Technical Features
     "What-If" Logic Engine: Allows users to model hypothetical future trips. The system calculates a "Delta Impact", showing how a proposed trip would change the user's residency health compared to their current confirmed status.
 
     Application Date Predictor: Calculates the earliest valid ILR application date by accounting for the "Presence Rule" and the 28-day application window.
-
-
-Version History & Evolution
-
-    This project followed an iterative development lifecycle, evolving from a simple tracker into a comprehensive suite:
-
-Version	,Milestone	,Key Features Added
-v1.0	Core Logic	Implementation of the rolling 180-day absence calculation and basic CRUD for trips.
-
-v2.0	Date Engine	Integration of Visa Approval and UK Entry dates; introduced ILR target date calculations and countdowns.
-
-v3.0	UI Refinement	Migration to a structured ttk.Treeview for better data visualization and trip management.
-
-v4.0	Simulation	Feature Release: Added the "Safe Travel Planner" to simulate future travel limits.
-
-v5.0	Dashboarding	Complete UI overhaul; introduced separate "Residency Health" dashboards for ILR and British Citizenship.
-
-v6.0	Hypotheticals	Added "What-If" trip toggles, allowing users to test scenarios without altering confirmed logs.
-
-
-v7.0	Persistence	Current Version: Added "Delta Impact" analytics 
+ 
 
 
 Technical Deep-Dive: The Rolling Window
@@ -44,14 +24,7 @@ Technical Deep-Dive: The Rolling Window
 
 
 
-# Algorithmic approach:
-for trip in sorted_trips:
-    window_end = trip.end
-    window_start = window_end - timedelta(days=365)
-    
-    # Calculate overlap of all other trips within this specific window
-    current_usage = sum_overlaps(all_trips, window_start, window_end)
-    max_rolling_breach = max(max_rolling_breach, current_usage)
+
 Tech Stack
 
     Language: Python 3.x
@@ -71,9 +44,17 @@ Tech Stack
     
     Consult the Planner: Use the Safe Travel Planner to see the maximum days you can safely leave the UK starting tomorrow.
 
-🎓 Portfolio Note
+Portfolio Note
 
-    Built as a CS major project to demonstrate proficiency in algorithmic thinking, iterative software design, and GUI engineering for solving real-world regulatory compliance problems.
+Built as a CS major project to demonstrate proficiency in algorithmic thinking, iterative software design, and GUI engineering for solving real-world regulatory compliance problems.
+
+## Credits & Attribution
+* **Lead Developer:** [Kimi Tang/darleksec]
+* **Libraries Used:** * [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap) by Israel Dryer (Theme & UI)
+    * [Tkinter](https://docs.python.org/3/library/tkinter.html) (Standard GUI Framework)
+
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 
-To do : encapsulate fucntions , implement view optoins to allow changes to font size/window size
+Note : implement view optoins to allow changes to font size/window size
