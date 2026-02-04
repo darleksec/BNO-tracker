@@ -17,13 +17,20 @@ import json
 class BNOAdvancedTracker:
     def __init__(self, root):
         self.root = root
+        self.root.title("BNO Settlement & Citizenship Suite (2026) ")
+        self.root.geometry("1000x1200")
+        
+        #construtors
         self.engine = LogicEngine()
         self.trips = []
         self.style = tb.Style()
-        self.root.title("BNO Settlement & Citizenship Suite (2026) ")
-        self.root.geometry("1000x1200")
         self.editing_index = None
 
+        #view options
+        self.font_scale = 1.0  # 1.0 = 100% zoom
+        self.base_font_family = "Segoe UI"
+
+        #func
         self.setup_ui()
     #   self.load_hardcoded_data()
         self.refresh_dashboard()
@@ -33,7 +40,23 @@ class BNOAdvancedTracker:
         self.menu_bar = tk.Menu(self.root)
         self.root.config(menu=self.menu_bar)
 
-        # Add "Help" menu
+        #  View Menu
+        self.view_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label="View", menu=self.view_menu)
+        
+        # Add Zoom commands with keyboard shortcuts
+        self.view_menu.add_command(label="Zoom In (+)", command=self.zoom_in, accelerator="Ctrl++")
+        self.view_menu.add_command(label="Zoom Out (-)", command=self.zoom_out, accelerator="Ctrl+-")
+        self.view_menu.add_separator()
+        self.view_menu.add_command(label="Reset Zoom", command=self.reset_zoom, accelerator="Ctrl+0")
+
+        #Zoom bindings
+        self.root.bind("<Control-equal>", self.zoom_in)  
+        self.root.bind("<Control-plus>", self.zoom_in)  
+        self.root.bind("<Control-minus>", self.zoom_out) 
+        self.root.bind("<Control-0>", self.reset_zoom)   
+
+        #  "Help" menu
         self.help_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label="Help", menu=self.help_menu)
         self.help_menu.add_command(label="About", command=self.show_about)
@@ -309,6 +332,46 @@ class BNOAdvancedTracker:
             pass
         except Exception as e:
             messagebox.showerror("Load Error", f"Could not read file: {e}")
+
+    def apply_zoom(self):
+        """Reconfigures global styles based on the current font_scale."""
+        new_size = int(11 * self.font_scale)
+        header_size = int(12 * self.font_scale)
+        dash_size = int(20 * self.font_scale) # Large numbers in dashboard
+        
+        # Update Standard Widgets
+        self.style.configure("TLabel", font=(self.base_font_family, new_size))
+        self.style.configure("TButton", font=(self.base_font_family, new_size))
+        self.style.configure("TCheckbutton", font=(self.base_font_family, new_size))
+        
+        # Update Treeview (Table)
+        # Rowheight must scale with font size or text gets cut off!
+        self.style.configure("Treeview", 
+                            font=(self.base_font_family, new_size), 
+                            rowheight=int(35 * self.font_scale))
+        self.style.configure("Treeview.Heading", font=(self.base_font_family, header_size, "bold"))
+        
+        # Update your custom Dashboard labels specifically
+        self.ilr_status_lbl.config(font=("Helvetica", dash_size, "bold"))
+        self.bc_status_lbl.config(font=("Helvetica", dash_size, "bold"))
+        
+        # Update the solve text (Troubleshooting box)
+        self.solve_text.config(font=("Consolas", new_size), wraplength=int(800 * self.font_scale))
+
+    def zoom_in(self, event=None):
+        if self.font_scale < 2.0: # Cap at 200%
+            self.font_scale += 0.1
+            self.apply_zoom()
+
+    def zoom_out(self, event=None):
+        if self.font_scale > 0.7: # Cap at 70%
+            self.font_scale -= 0.1
+            self.apply_zoom()
+
+    def reset_zoom(self,event=None):
+        self.font_scale = 1.0
+        self.apply_zoom()
+
 
     def show_about(self):
         messagebox.showinfo(
