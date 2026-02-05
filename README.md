@@ -1,40 +1,51 @@
-BNO Settlement & Citizenship Suite (2026)
-A high-integrity compliance tool for BNO (British National Overseas) visa holders to track residency requirements for Indefinite Leave to Remain (ILR) and British Citizenship (BC).
+# BNO Settlement and Citizenship Suite (2026)
 
-BNO-tracker automates the complex "Rolling Window" absence logic and "Presence Rule" checks that are often prone to human error during the 5-year residency path.
+[Project Repository](https://github.com/darleksec/BNO-tracker)
 
-Key Features
-Rolling Window Engine: Automatically identifies the 365-day period with the highest density of absences to ensure compliance with the < 180-day ILR rule.
+A high-integrity compliance and tracking suite for British National (Overseas) visa holders. This tool automates the validation of residency requirements for Indefinite Leave to Remain (ILR) and British Citizenship (BC) applications.
 
-Safe Travel Planner (What-If): Simulate future travel dates without affecting historical records to see the immediate impact on your travel "budget."
+## Overview
 
-BC Presence Validator: Checks the critical "Presence Rule"—ensuring you were physically in the UK exactly 5 years prior to your citizenship application date.
+The BNO-tracker is a Python-based desktop application designed to eliminate human error in calculating "Rolling Window" absences. UK Home Office rules regarding residency are mathematically complex; this suite provides a reliable logic engine to ensure applicants remain within the statutory limits of their visa class.
 
-Persistence Layer: Full Save/Load functionality using JSON serialization for local data privacy.
+## Core Capabilities
 
-Dynamic UI Scaling: Modern, accessible interface with real-time zoom and font scaling.
+* **Rolling 365-Day Absence Monitor**: Identifies the maximum absence density across any possible 365-day window to prevent ILR breaches.
+* **Hypothetical Trip Simulation**: A "What-If" engine that allows users to test travel plans against their current residency data without permanent record modification.
+* **Statutory Presence Validator**: Cross-references application dates against historical travel to ensure physical presence in the UK exactly five years prior to the BC application date.
+* **Conflict Resolution**: Integrated collision detection for overlapping or logically impossible travel dates.
+* **Data Persistence**: Local JSON-based serialization for user privacy and offline data management.
 
-Conflict Detection: Prevents logical errors by blocking overlapping trip dates.
+## Technical Logic and Algorithms
+
+The primary challenge of UK immigration compliance is that the 180-day limit is not based on a calendar year, but on any rolling 365-day period.
+
+### Rolling Window Calculation
+
+The logic engine utilizes a forward-projecting windowing algorithm. For every trip departure recorded, the engine creates a window: $[T_{start}, T_{start} + 365]$. It then calculates the intersection of all other recorded trips within this range.
+
+The intersection of two intervals, Trip A $[S_1, E_1]$ and Trip B $[S_2, E_2]$, is calculated using the following formula:
+
+$$Overlap = \max(0, \min(E_1, E_2) - \max(S_1, S_2) + 1)$$
+
+### Absence Counting Convention
+
+In accordance with Home Office guidance, only full days spent outside the UK are counted. The days of departure and arrival are excluded from the total. 
+
+$$Absence = \max(0, (Date_{Return} - Date_{Departure}) - 1)$$
 
 
-The Logic: How it Works
-Calculating UK residency isn't just about counting days; it's about Interval Management.
 
-The Rolling Window Algorithm
-Unlike a calendar-year calculation, the ILR rule applies to any rolling 365-day period. This project implements a Dynamic Windowing approach:
+## System Requirements and Dependencies
 
-The engine iterates through every trip departure.
+| Dependency | Version | Purpose |
+| :--- | :--- | :--- |
+| Python | 3.8+ | Core Runtime |
+| ttkbootstrap | Latest | Themed UI Framework |
+| Tkinter | Standard | GUI Base |
+| JSON | Standard | Data Persistence |
 
-It projects a 365-day window forward.
-
-It calculates the intersection of all other trips within that window using: Overlap = max(0, min(EndA, EndB) - max(StartA, StartB) + 1)
-
-It returns the maximum density found across the entire history.
-
-Presence Rule Validation
-For British Citizenship, the Home Office requires physical presence in the UK on the date 5 years prior to application. The tracker cross-references your planned application date against your trip database to flag "Presence Rule Fails" and suggests the earliest "Safe Date" to apply.
-
-
+## Installation and Execution
 
 Installation & Usage
 Prerequisites
@@ -67,19 +78,17 @@ Tech Stack
     Logic: datetime & timedelta (Temporal Algorithms)
 
 
- Usage
+### Usage
 
-    Configure Base Dates: Set your Visa Approval and UK Entry dates.
-    
-    Log Trips: Add confirmed travel history to the Absence Log.
-    
-    Plan Future Trips: Toggle "What-If" mode to see how a potential trip affects your "Delta Impact."
-    
-    Consult the Planner: Use the Safe Travel Planner to see the maximum days you can safely leave the UK starting tomorrow.
+Configure Base Dates: Set your Visa Approval and UK Entry dates.
 
-Portfolio Note
+Log Trips: Add confirmed travel history to the Absence Log.
 
-Built as a CS major project to demonstrate proficiency in algorithmic thinking, iterative software design, and GUI engineering for solving real-world regulatory compliance problems.
+Plan Future Trips: Toggle "What-If" mode to see how a potential trip affects your "Delta Impact."
+
+Consult the Planner: Use the Safe Travel Planner to see the maximum days you can safely leave the UK starting tomorrow.
+
+
 
 ## Credits & Attribution
 * **Lead Developer:** [Kimi Tang/darleksec]
@@ -90,4 +99,3 @@ Built as a CS major project to demonstrate proficiency in algorithmic thinking, 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 
-Note : implement view optoins to allow changes to font size/window size
