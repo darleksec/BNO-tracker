@@ -1,30 +1,63 @@
-🇬🇧 UK BNO Residency & Citizenship Suite
+BNO Settlement & Citizenship Suite (2026)
+A high-integrity compliance tool for BNO (British National Overseas) visa holders to track residency requirements for Indefinite Leave to Remain (ILR) and British Citizenship (BC).
 
-An advanced algorithmic tool for BNO visa holders to navigate UK Home Office residency requirements.
+BNO-tracker automates the complex "Rolling Window" absence logic and "Presence Rule" checks that are often prone to human error during the 5-year residency path.
 
-Project Overview
+Key Features
+Rolling Window Engine: Automatically identifies the 365-day period with the highest density of absences to ensure compliance with the < 180-day ILR rule.
 
-    This application is a specialized decision-support system engineered to track, simulate, and predict residency status for BNO visa holders. It automates the calculation of the complex "Rolling 180-day" Indefinite Leave to Remain (ILR) rule and provides a simulation engine for future travel planning.
+Safe Travel Planner (What-If): Simulate future travel dates without affecting historical records to see the immediate impact on your travel "budget."
 
-Key Technical Features
+BC Presence Validator: Checks the critical "Presence Rule"—ensuring you were physically in the UK exactly 5 years prior to your citizenship application date.
 
-    Rolling Window Algorithm: Implements a sliding window check to ensure no 365-day period in a 5-year span exceeds the 180-day absence limit.
+Persistence Layer: Full Save/Load functionality using JSON serialization for local data privacy.
 
-    Safe Travel Simulation: A predictive engine that calculates the maximum allowable absence for a future trip based on historical and currently logged travel data.
+Dynamic UI Scaling: Modern, accessible interface with real-time zoom and font scaling.
 
-    "What-If" Logic Engine: Allows users to model hypothetical future trips. The system calculates a "Delta Impact", showing how a proposed trip would change the user's residency health compared to their current confirmed status.
-
-    Application Date Predictor: Calculates the earliest valid ILR application date by accounting for the "Presence Rule" and the 28-day application window.
- 
-
-
-Technical Deep-Dive: The Rolling Window
-
-    One of the core challenges was the Home Office Rolling 180-Day Rule. Unlike a fixed calendar year, the system must check every possible 365-day window.
+Conflict Detection: Prevents logical errors by blocking overlapping trip dates.
 
 
+The Logic: How it Works
+Calculating UK residency isn't just about counting days; it's about Interval Management.
+
+The Rolling Window Algorithm
+Unlike a calendar-year calculation, the ILR rule applies to any rolling 365-day period. This project implements a Dynamic Windowing approach:
+
+The engine iterates through every trip departure.
+
+It projects a 365-day window forward.
+
+It calculates the intersection of all other trips within that window using: Overlap = max(0, min(EndA, EndB) - max(StartA, StartB) + 1)
+
+It returns the maximum density found across the entire history.
+
+Presence Rule Validation
+For British Citizenship, the Home Office requires physical presence in the UK on the date 5 years prior to application. The tracker cross-references your planned application date against your trip database to flag "Presence Rule Fails" and suggests the earliest "Safe Date" to apply.
 
 
+
+Installation & Usage
+Prerequisites
+Python 3.8 or higher
+
+pip (Python package manager)
+
+
+Setup
+Clone the repository:
+
+    Bash
+    git clone https://github.com/darleksec/BNO-tracker.git
+    cd BNO-tracker
+Install dependencies:
+
+Bash
+    pip install ttkbootstrap
+    Run the application:
+
+Bash
+    python app.py
+    
 Tech Stack
 
     Language: Python 3.x
