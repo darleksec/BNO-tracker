@@ -103,6 +103,7 @@ class BNOAdvancedTracker:
             self.tree.column(col, anchor="center", width=120)
         self.tree.pack(pady=0, padx=20, fill="x")
         self.tree.tag_configure('hypothetical', foreground='orange')
+        self.tree.tag_configure('editing', foreground='cyan', background='#1a4d6f')
         self.style.configure(
             "Treeview",
             borderwidth=5,
