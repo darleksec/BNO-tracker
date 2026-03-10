@@ -96,7 +96,8 @@ class BNOAdvancedTracker:
         self.add_btn.grid(row=0, column=5, padx=5)
         tb.Button(trip_frame, text="Edit", command=self.load_edit, bootstyle="info-outline").grid(row=0, column=6, padx=2)
         tb.Button(trip_frame, text="Delete", command=self.delete_trip, bootstyle="danger-outline").grid(row=0, column=7, padx=2)
-        tb.Button(trip_frame, text="Cancel", command=self.cancel_edit, bootstyle="warning-outline").grid(row=0, column=8, padx=2)
+        self.cancel_btn = tb.Button(trip_frame, text="Cancel", command=self.cancel_edit, bootstyle="warning-outline", state="disabled")
+        self.cancel_btn.grid(row=0, column=8, padx=2)
 
         self.tree = tb.Treeview(self.root, columns=("S", "E", "D", "T"), show='headings', height=10)
         for col, head in zip(("S", "E", "D", "T"), ("Departure", "Return", "Days", "Type")):
@@ -304,6 +305,7 @@ class BNOAdvancedTracker:
         if self.editing_index is not None:
             self.editing_index = None
             self.add_btn.config(text="Add Trip")
+            self.cancel_btn.config(state="disabled")
             self.dep_entry.entry.delete(0, 'end')
             self.ret_entry.entry.delete(0, 'end')
             self.what_if_var.set(False)
