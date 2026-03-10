@@ -260,13 +260,22 @@ class BNOAdvancedTracker:
 
     def refresh_tree(self):
         for i in self.tree.get_children(): self.tree.delete(i)
+        editing_trip = self.trips[self.editing_index] if self.editing_index is not None else None
+
         for t in sorted(self.trips, key=lambda x: x.departure):
+            # Determine which tags to apply
+            tags = []
+            if t.is_what_if:
+                tags.append('hypothetical')
+            if editing_trip is not None and t is editing_trip:
+                tags.append('editing')
+
             self.tree.insert("", "end", values=(
-                t.departure.strftime("%d/%m/%Y"), 
+                t.departure.strftime("%d/%m/%Y"),
                 t.return_date.strftime("%d/%m/%Y"),
                 t.daysAbsent,
                 "WHAT-IF" if t.is_what_if else "CONFIRMED"
-            ), tags=('hypothetical',) if t.is_what_if else ())
+            ), tags=tuple(tags) if tags else ())
 
     def delete_trip(self):
         sel = self.tree.selection()
@@ -286,6 +295,7 @@ class BNOAdvancedTracker:
                 self.ret_entry.entry.delete(0, 'end'); self.ret_entry.entry.insert(0, item[1])
                 self.what_if_var.set(t.is_what_if)
                 self.add_btn.config(text="Save Edit")
+                self.refresh_tree()
                 break
 
     def save_data(self, filename="trips_data.json"):
