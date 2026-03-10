@@ -297,6 +297,7 @@ class BNOAdvancedTracker:
                 self.ret_entry.entry.delete(0, 'end'); self.ret_entry.entry.insert(0, item[1])
                 self.what_if_var.set(t.is_what_if)
                 self.add_btn.config(text="Save Edit")
+                self.cancel_btn.config(state="normal")
                 self.refresh_tree()
                 break
 
