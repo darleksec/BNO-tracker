@@ -244,6 +244,7 @@ class BNOAdvancedTracker:
             self.trips[self.editing_index] = new_trip
             self.editing_index = None
             self.add_btn.config(text="Add Trip")
+            self.cancel_btn.config(state="disabled")
         else:
             self.trips.append(new_trip)
 
