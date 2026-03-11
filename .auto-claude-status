@@ -1,0 +1,25 @@
+{
+  "active": true,
+  "spec": "001-improve-editing-mode-with-visual-feedback-and-a-ca",
+  "state": "building",
+  "subtasks": {
+    "completed": 6,
+    "total": 7,
+    "in_progress": 1,
+    "failed": 0
+  },
+  "phase": {
+    "current": "Integration Testing",
+    "id": null,
+    "total": 1
+  },
+  "workers": {
+    "active": 0,
+    "max": 1
+  },
+  "session": {
+    "number": 1,
+    "started_at": "2026-03-11T01:54:06.281281"
+  },
+  "last_update": "2026-03-11T01:54:06.384230"
+}

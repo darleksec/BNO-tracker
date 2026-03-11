@@ -1,0 +1,39 @@
+{
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true
+  },
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Read(./**)",
+      "Write(./**)",
+      "Edit(./**)",
+      "Glob(./**)",
+      "Grep(./**)",
+      "Read(C:\\Users\\taiki\\Documents\\GitHub\\BNO-tracker\\.auto-claude\\worktrees\\tasks\\001-improve-editing-mode-with-visual-feedback-and-a-ca/**)",
+      "Write(C:\\Users\\taiki\\Documents\\GitHub\\BNO-tracker\\.auto-claude\\worktrees\\tasks\\001-improve-editing-mode-with-visual-feedback-and-a-ca/**)",
+      "Edit(C:\\Users\\taiki\\Documents\\GitHub\\BNO-tracker\\.auto-claude\\worktrees\\tasks\\001-improve-editing-mode-with-visual-feedback-and-a-ca/**)",
+      "Glob(C:\\Users\\taiki\\Documents\\GitHub\\BNO-tracker\\.auto-claude\\worktrees\\tasks\\001-improve-editing-mode-with-visual-feedback-and-a-ca/**)",
+      "Grep(C:\\Users\\taiki\\Documents\\GitHub\\BNO-tracker\\.auto-claude\\worktrees\\tasks\\001-improve-editing-mode-with-visual-feedback-and-a-ca/**)",
+      "Read(C:\\Users\\taiki\\Documents\\GitHub\\BNO-tracker\\.auto-claude\\worktrees\\tasks\\001-improve-editing-mode-with-visual-feedback-and-a-ca\\.auto-claude\\specs\\001-improve-editing-mode-with-visual-feedback-and-a-ca/**)",
+      "Write(C:\\Users\\taiki\\Documents\\GitHub\\BNO-tracker\\.auto-claude\\worktrees\\tasks\\001-improve-editing-mode-with-visual-feedback-and-a-ca\\.auto-claude\\specs\\001-improve-editing-mode-with-visual-feedback-and-a-ca/**)",
+      "Edit(C:\\Users\\taiki\\Documents\\GitHub\\BNO-tracker\\.auto-claude\\worktrees\\tasks\\001-improve-editing-mode-with-visual-feedback-and-a-ca\\.auto-claude\\specs\\001-improve-editing-mode-with-visual-feedback-and-a-ca/**)",
+      "Read(C:\\Users\\taiki\\Documents\\GitHub\\BNO-tracker\\.auto-claude/**)",
+      "Write(C:\\Users\\taiki\\Documents\\GitHub\\BNO-tracker\\.auto-claude/**)",
+      "Edit(C:\\Users\\taiki\\Documents\\GitHub\\BNO-tracker\\.auto-claude/**)",
+      "Glob(C:\\Users\\taiki\\Documents\\GitHub\\BNO-tracker\\.auto-claude/**)",
+      "Grep(C:\\Users\\taiki\\Documents\\GitHub\\BNO-tracker\\.auto-claude/**)",
+      "Bash(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "mcp__context7__resolve-library-id(*)",
+      "mcp__context7__query-docs(*)",
+      "mcp__graphiti-memory__search_nodes(*)",
+      "mcp__graphiti-memory__search_facts(*)",
+      "mcp__graphiti-memory__add_episode(*)",
+      "mcp__graphiti-memory__get_episodes(*)",
+      "mcp__graphiti-memory__get_entity_edge(*)"
+    ]
+  }
+}
